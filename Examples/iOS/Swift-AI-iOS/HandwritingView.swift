@@ -10,13 +10,13 @@ import APKit
 
 class HandwritingView: UIView {
     
-    let tempLabel = UILabel()
-    
     let canvasContainer = UIView()
     let canvas = UIImageView()
-    
+    let snapshotBox = UIView()
     let outputContainer = UIView()
     let outputLabel = UILabel()
+    let confidenceLabel = UILabel()
+    let imageView = UIImageView()
     
     // Buttons
     let buttonContainer = UIView()
@@ -39,9 +39,9 @@ class HandwritingView: UIView {
     
     func configureSubviews() {
         // Add Subviews
-        self.addSubviews([self.canvasContainer, self.outputContainer, self.buttonContainer])
-        self.canvasContainer.addSubview(self.canvas)
-        self.outputContainer.addSubview(self.outputLabel)
+        self.addSubviews([self.canvasContainer, self.outputContainer, self.buttonContainer, self.imageView])
+        self.canvasContainer.addSubviews([self.canvas, self.snapshotBox])
+        self.outputContainer.addSubviews([self.outputLabel, self.confidenceLabel])
         self.buttonContainer.addSubviews([self.startPauseButton, self.clearButton, self.infoButton])
         
         // Style View
@@ -56,16 +56,32 @@ class HandwritingView: UIView {
         
         self.canvas.backgroundColor = .clearColor()
         
+        self.snapshotBox.backgroundColor = UIColor.clearColor()
+        self.snapshotBox.layer.borderColor = UIColor.swiftGreen().CGColor
+        self.snapshotBox.layer.borderWidth = 2
+        self.snapshotBox.layer.cornerRadius = 6
+        self.snapshotBox.alpha = 0
+        
         self.outputContainer.backgroundColor = .whiteColor()
         self.outputContainer.layer.cornerRadius = 4
         self.outputContainer.layer.shadowColor = UIColor.swiftMediumGray().CGColor
         self.outputContainer.layer.shadowOpacity = 0.3
         self.outputContainer.layer.shadowOffset = CGSize(width: 1, height: 3)
         
-        self.outputLabel.text = "6"
         self.outputLabel.textColor = .blackColor()
         self.outputLabel.textAlignment = .Center
-        self.outputLabel.font = UIFont.swiftFontOfSize(80)
+        self.outputLabel.font = UIFont.swiftFontOfSize(100)
+        
+        self.confidenceLabel.textColor = .blackColor()
+        self.confidenceLabel.textAlignment = .Right
+        self.confidenceLabel.font = UIFont.swiftFontOfSize(15)
+        
+        self.imageView.backgroundColor = UIColor.whiteColor()
+        self.imageView.layer.cornerRadius = 4
+        self.imageView.layer.shadowColor = UIColor.swiftMediumGray().CGColor
+        self.imageView.layer.shadowOpacity = 0.3
+        self.imageView.layer.shadowOffset = CGSize(width: 1, height: 3)
+        self.imageView.contentMode = .ScaleAspectFit
         
         self.buttonContainer.backgroundColor = .whiteColor()
         self.buttonContainer.layer.cornerRadius = 4
@@ -91,10 +107,6 @@ class HandwritingView: UIView {
         self.infoButton.layer.cornerRadius = 6
         self.infoButton.minimumScale = 0.92
         
-        self.tempLabel.text = "Handwriting recognition: under construction"
-        self.tempLabel.textColor = .blackColor()
-        self.tempLabel.font = UIFont.swiftFontOfSize(14)
-        
     }
     
     override func updateConstraints() {
@@ -111,13 +123,23 @@ class HandwritingView: UIView {
         
         self.canvas.fillSuperview()
         
+        self.imageView.constrainUsing(constraints: [
+            Constraint.ll : (of: self, offset: 10),
+            Constraint.rcx : (of: self, offset: -7),
+            Constraint.tb : (of: self.canvasContainer, offset: 15),
+            Constraint.bt : (of: self.buttonContainer, offset: -15)])
+        
         self.outputContainer.constrainUsing(constraints: [
-            Constraint.cxcx : (of: self, offset: 0),
-            Constraint.w : (of: nil, offset: 200),
+            Constraint.lcx : (of: self, offset: 7),
+            Constraint.rr : (of: self, offset: -10),
             Constraint.tb : (of: self.canvasContainer, offset: 15),
             Constraint.bt : (of: self.buttonContainer, offset: -15)])
         
         self.outputLabel.centerInSuperview()
+        
+        self.confidenceLabel.constrainUsing(constraints: [
+            Constraint.rr : (of: self.outputContainer, offset: 0),
+            Constraint.bb : (of: self.outputContainer, offset: 0)])
         
         self.buttonContainer.constrainUsing(constraints: [
             Constraint.ll : (of: self.canvasContainer, multiplier: 1, offset: 0),
@@ -151,6 +173,7 @@ class HandwritingView: UIView {
         super.layoutSubviews()
         self.canvasContainer.layer.shadowPath = UIBezierPath(roundedRect: self.canvasContainer.bounds, cornerRadius: self.canvasContainer.layer.cornerRadius).CGPath
         self.outputContainer.layer.shadowPath = UIBezierPath(roundedRect: self.outputContainer.bounds, cornerRadius: self.outputContainer.layer.cornerRadius).CGPath
+        self.imageView.layer.shadowPath = UIBezierPath(roundedRect: self.imageView.bounds, cornerRadius: self.imageView.layer.cornerRadius).CGPath
         self.buttonContainer.layer.shadowPath = UIBezierPath(roundedRect: self.buttonContainer.bounds, cornerRadius: self.buttonContainer.layer.cornerRadius).CGPath
     }
 }
